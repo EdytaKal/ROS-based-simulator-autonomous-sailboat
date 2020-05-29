@@ -1,0 +1,354 @@
+<?xml version="1.0"?>
+<robot name="sailboat">
+
+	<material name="blue">
+		<color rgba="0 0 0.8 1"/>
+	</material>	
+
+	<material name="white">
+		<color rgba="1 1 1 1"/>
+	</material>
+
+<!--	Link created to get rid of the error: The root link base_link has an inertia specified 
+	in the URDF, but KDL does not support a root link with an inertia.	-->
+	
+	<link name="dummy">
+	</link>
+
+	<link name="base_link">
+		<visual>
+			<geometry>
+				<mesh filename="package://mmp/urdf/maxiMoop.dae"/>
+			</geometry>				
+			<material name="blue"/>
+		</visual>
+		<collision>
+			<geometry>
+				<mesh filename="package://mmp/urdf/maxiMoop.dae"/>
+			</geometry>
+		</collision>
+		<inertial>
+			<mass value="0.2"/>
+			<inertia ixx="0.87" ixy="0.0" ixz="0.0" iyy="0.2417" iyz="0.0" izz="1.0417"/>
+		</inertial>				
+	</link>
+
+	<link name="mast_link">
+		<visual>
+			<geometry>
+				<cylinder length="4.25" radius="0.05"/>
+			</geometry>
+			<origin xyz="-1.25 0.225 1.5"/>
+			<material name="blue"/>
+		</visual>
+		<collision>
+			<geometry>
+				<cylinder length="4.25" radius="0.05"/>
+			</geometry>
+			<origin xyz="-1.25 0.225 1.5"/>
+			<material name="blue"/>
+		</collision>
+		<inertial>
+			<mass value="1"/>
+			<inertia ixx="0.087" ixy="0.0" ixz="0.0" iyy="0.02417" iyz="0.0" izz="0.10417"/>
+		</inertial>				
+	</link>
+
+	<link name="sail_link">
+		<visual>
+			<geometry>
+				<mesh filename="package://mmp/urdf/sail.dae"/>
+			</geometry>
+			<origin rpy="0 0 0" xyz="0 0 0"/>
+			<material name="white"/>
+		</visual>
+		<collision>
+			<geometry>
+				<mesh filename="package://mmp/urdf/sail.dae"/>
+			</geometry>
+			<origin rpy="0 0 0" xyz="0 0 0"/>
+			<material name="white"/>
+		</collision>
+		<inertial>
+			<mass value="0.2"/>
+			<inertia ixx="0.0174" ixy="0.0" ixz="0.0" iyy="0.04834" iyz="0.0" izz="0.20834"/>
+		</inertial>				
+	</link>
+
+
+	<link name="rudder_holder_link">
+		<visual>
+			<geometry>
+				<cylinder length="0.325" radius="0.015"/>
+			</geometry>
+			<origin xyz="-3.65 0.225 0"/>
+			<material name="white"/>
+		</visual>
+		<collision>
+			<geometry>
+				<cylinder length="0.325" radius="0.015"/>
+			</geometry>
+			<origin xyz="-3.65 0.225 0"/>
+			<material name="white"/>
+		</collision>				
+		<inertial>
+			<mass value="0.2"/>
+			<inertia ixx="0.0174" ixy="0.0" ixz="0.0" iyy="0.04834" iyz="0.0" izz="0.20834"/>
+		</inertial>				
+	</link>
+
+	<link name="rudder_link">
+		<visual>
+			<geometry>
+				<box size="0.05 0.25 0.75"/>
+			</geometry>
+			<origin rpy="0 0 0" xyz="0 -0.125 0"/>
+			<material name="white"/>	
+		</visual>
+		<collision>
+			<geometry>
+				<box size="0.05 0.25 0.75"/>
+			</geometry>
+			<origin rpy="0 0 0" xyz="0 -0.125 0"/>
+			<material name="white"/>	
+		</collision>
+		<inertial>
+			<mass value="0.2"/>
+			<inertia ixx="0.0435" ixy="0.0" ixz="0.0" iyy="0.012085" iyz="0.0" izz="0.05285"/>
+		</inertial>
+	</link>
+
+<!-- **************** JOINT ELEMENTS *****************-->
+
+<!--	Joint created to get rid of the error: The root link base_link has an inertia specified in
+	 the URDF, but KDL does not support a root link with an inertia.	-->
+	<joint name="dummy_joint" type="fixed">
+     		<parent link="dummy"/>
+    		<child link="base_link"/>
+  	 </joint>
+
+	<joint name="base_mast_joint" type="fixed">
+		<parent link="base_link"/>
+		<child link="mast_link"/>
+		<origin xyz="0.3 0 0.55"/>
+	</joint>
+
+	<joint name="mast_sail_joint" type="revolute">
+		<axis xyz="0 1 0"/>
+		<limit effort="1000.0" lower="-1.5708" upper="1.5708" velocity="0.5"/>
+		<origin rpy="1.5708 0 0" xyz="-1.25 0.25 0"/>
+		<parent link="mast_link"/>
+		<child link="sail_link"/>
+	</joint>
+
+	<joint name="base_rudder_joint" type="fixed">
+		<parent link="base_link"/>
+		<child link="rudder_holder_link"/>
+		<origin xyz="0 0 0"/>
+	</joint>
+
+	<joint name="holder_rudder_joint" type="revolute">
+		<axis xyz="0 0 1"/>
+		<limit effort="1000.0" lower="-1.5708" upper="1.5708" velocity="0.5"/>
+		<origin rpy="0 -3.1416 -1.5708" xyz="-3.65 0.225 -0.2"/>
+		<parent link="rudder_holder_link"/>
+		<child link="rudder_link"/>
+	</joint>
+	
+<!-- **************** TRANSMISSION ELEMENTS *****************-->
+	<transmission name="sail_tran">
+		<type>transmission_interface/SimpleTransmission</type>
+		<joint name="mast_sail_joint">
+			<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="sail_motor">
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+
+	<transmission name="rudder_tran">
+		<type>transmission_interface/SimpleTransmission</type>
+		<joint name="holder_rudder_joint">
+			<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="rudder_motor">
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+
+<!-- **************** GAZEBO ELEMENTS *****************-->
+	<gazebo reference="base_link">
+		<material>Gazebo/Blue</material>
+	</gazebo>
+	<gazebo reference="mast_link">
+		<material>Gazebo/Blue</material>
+	</gazebo>
+	<gazebo reference="rudder_holder_link">
+		<material>Gazebo/Blue</material>
+	</gazebo>
+	<gazebo reference="sail_link">
+		<material>Gazebo/White</material>
+		<mu1>0.2</mu1>
+		<mu2>0.2</mu2>
+	</gazebo>
+	<gazebo reference="rudder_link">
+		<material>Gazebo/White</material>
+		<mu1>0.2</mu1>
+		<mu2>0.2</mu2>
+	</gazebo>
+
+
+	<gazebo>
+		<plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+			<robotNamespace>/boat</robotNamespace>
+		</plugin>
+	</gazebo>
+
+<!-- **************** BUOYANCY PLUGINS *****************-->
+<!--    	<plugin filename="libbuoyancy_gazebo_plugin.so" name="BuoyancyPlugin">-->
+<!--      		<wave_model>ocean_waves</wave_model>-->
+<!--     		<fluid_density>1000</fluid_density>-->
+<!--      		<fluid_level>0.0</fluid_level>-->
+<!--      		<linear_drag>1000.0</linear_drag>-->
+<!--      		<angular_drag>200.0</angular_drag>-->
+<!--      		<buoyancy name="buoyancy_base">-->
+<!--        		<link_name>base_link</link_name>-->
+<!--        		<geometry>-->
+<!--          			<box size="1 0.5 0.2"/>-->
+<!--        		</geometry>-->
+<!--      		</buoyancy>-->
+<!--    	</plugin>	-->
+<!---->
+<!--	<plugin filename="libbuoyancy_gazebo_plugin.so" name="BuoyancyPlugin">-->
+<!--	        <fluid_density>1000</fluid_density>-->
+<!--	        <fluid_level>0.0</fluid_level>-->
+<!--	        <linear_drag>1000.0</linear_drag>-->
+<!--	        <angular_drag>200.0</angular_drag>-->
+<!--	        <buoyancy name="buoyancy_base">-->
+<!--			<link_name>base_link</link_name>-->
+<!--			<geometry>-->
+<!--				<box size="1 0.5 0.2"/>-->
+<!--			</geometry>	-->
+<!--		</buoyancy>-->
+<!--		<buoyancy name="buoyancy_mast">-->
+<!--                        <link_name>mast_link</link_name>-->
+<!--                        <geometry>-->
+<!--                                <cylinder length="1" radius="0.025"/>-->
+<!--                        </geometry>-->
+<!--                </buoyancy>-->
+<!--	</plugin>-->
+<!---->
+<!--	<plugin filename="libbuoyancy_gazebo_plugin.so" name="BuoyancyPlugin">-->
+<!--                <fluid_density>1000</fluid_density>-->
+<!--                <fluid_level>0.0</fluid_level>-->
+<!--                <linear_drag>1000.0</linear_drag>-->
+<!--                <angular_drag>200.0</angular_drag>-->
+<!--                <buoyancy name="buoyancy_mast">-->
+<!--                        <link_name>mast_link</link_name>-->
+<!--                        <geometry>-->
+<!--                                <cylinder length="1" radius="0.025"/>-->
+<!--                        </geometry>-->
+<!--                </buoyancy>-->
+<!--                <buoyancy name="buoyancy_sail">-->
+<!--                        <link_name>sail_link</link_name>-->
+<!--                        <geometry>-->
+<!--                                <box size="0.025 0.7 0.9"/>-->
+<!--                        </geometry>-->
+<!--                </buoyancy>-->
+<!--        </plugin>-->
+
+<!--	<plugin filename="libbuoyancy_gazebo_plugin.so" name="BuoyancyPlugin">-->
+<!--                <fluid_density>1000</fluid_density>-->
+<!--                <fluid_level>0.0</fluid_level>-->
+<!--                <linear_drag>1000.0</linear_drag>-->
+<!--                <angular_drag>200.0</angular_drag>-->
+<!--                <buoyancy name="buoyancy_base">-->
+<!--                        <link_name>base_link<link_name/>-->
+<!--                        <geometry>-->
+<!--                                <box size="1 0.5 0.2"/>-->
+<!--                        </geometry>-->
+<!--                </buoyancy>-->
+<!--                <buoyancy name="buoyancy_holder">-->
+<!--                        <link_name>rudder_holder_link</link_name>-->
+<!--                        <geometry>-->
+<!--                                <cylinder length="0.2" radius="0.015"/>-->
+<!--                        </geometry>-->
+<!--                </buoyancy>-->
+<!--    	</plugin>-->
+<!--		-->
+<!--	<plugin filename="libbuoyancy_gazebo_plugin.so" name="BuoyancyPlugin">-->
+<!--                <fluid_density>1000</fluid_density>-->
+<!--                <fluid_level>0.0</fluid_level>-->
+<!--                <linear_drag>1000.0</linear_drag>-->
+<!--                <angular_drag>200.0</angular_drag>-->
+<!--                <buoyancy name="buoyancy_holder">-->
+<!--                        <link_name>rudder_holder_link</link_name>-->
+<!--                        <geometry>-->
+<!--                                <cylinder length="0.2" radius="0.015"/>-->
+<!--                        </geometry>-->
+<!--                </buoyancy>-->
+<!--		<buoyancy name="buoyancy_rudder">-->
+<!--                        <link_name>rudder_link<link_name/>-->
+<!--                        <geometry>-->
+<!--                                <box size="0.025 0.7 0.9"/>-->
+<!--                        </geometry>-->
+<!--                </buoyancy>-->
+<!--    	</plugin>-->
+
+	<!--Gazebo Plugin for simulating WAM-V dynamics-->
+	<gazebo>
+		<plugin filename="libusv_gazebo_dynamics_plugin.so" name="usv_dynamics_wamv_dynamics_plugin">
+		<bodyName>base_link</bodyName>
+		<!-- Must be same as the ocean model!-->
+		<waterLevel>0</waterLevel>
+		<waterDensity>997.8</waterDensity>
+		<!-- Added mass -->
+		<xDotU>0.0</xDotU>
+		<yDotV>0.0</yDotV>
+		<nDotR>0.0</nDotR>
+		<!-- Linear and quadratic drag -->
+		<xU>51.3</xU>
+		<xUU>72.4</xUU>
+		<yV>40.0</yV>
+		<yVV>0.0</yVV>
+		<zW>500.0</zW>
+		<kP>50.0</kP>
+		<mQ>50.0</mQ>
+		<nR>400.0</nR>
+		<nRR>0.0</nRR>
+		<!-- General dimensions -->
+		<!--<boatArea>2.2</boatArea>-->
+		<hullRadius>0.213</hullRadius>
+		<boatWidth>2.4</boatWidth>
+		<boatLength>4.9</boatLength>
+		<!-- Length discretization, AKA, "N" -->
+		<length_n>2</length_n>
+		<!-- Wave model -->
+		<wave_model>ocean_waves</wave_model>
+		</plugin>
+	</gazebo>
+ 	<!--Gazebo Plugin for simulating WAM-V dynamics-->
+    		<plugin filename="libusv_gazebo_wind_plugin.so" name="wind">
+      		<!-- models to be effected by the wind -->
+      		<wind_obj>
+        		<name>wamv</name>
+        		<link_name>base_link</link_name>
+        		<coeff_vector>0.5 0.5 0.33</coeff_vector>
+      		</wind_obj>
+      		<wind_obj>
+		        <name>robotx_light_buoy</name>
+		        <link_name>base_link</link_name>
+		        <coeff_vector>0.5 0.5 0.33</coeff_vector>
+      		</wind_obj>
+		<!-- Wind -->
+		<wind_direction>270</wind_direction>
+		<!-- in degrees -->
+		<wind_mean_velocity>10</wind_mean_velocity>
+		<var_wind_gain_constants>100</var_wind_gain_constants>
+		<var_wind_time_constants>5</var_wind_time_constants>
+		<random_seed></random_seed>
+		<!-- set to zero/empty to randomize -->
+		<update_rate>10</update_rate>
+    		</plugin>
+
+</robot>
