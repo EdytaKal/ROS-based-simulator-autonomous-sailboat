@@ -1,0 +1,2 @@
+# ROS-based-simulator-autonomous-sailboat
+This project focuses on the development of the simulator of the autonomous sailing boat in the Robot Operating System (ROS). It consists of the control mechanism for the boat, which enables the vessel to travel without any input from the user apart from the designated direction of sailing. The sailboat adapts the sail and rudder positions depending on the chosen trajectory.
