@@ -16,7 +16,7 @@ This project focuses on the development of the simulator of the autonomous saili
 # Instructions for installing the VRX Gazebo Simulator.
 
 To install the Virtual RobotX Simulator follow the instructions from the following website:
-https://bitbucket.org/osrf/vrx/wiki/tutorials/SystemSetupInstall
+https://github.com/osrf/vrx/wiki/system_setup_tutorials
 
 # Operator’s manual for the simulator.
  
